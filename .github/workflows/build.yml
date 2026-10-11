@@ -1,0 +1,36 @@
+name: Build LiroycEffects
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Unzip source
+        shell: bash
+        run: |
+          unzip -q source.zip
+          ls effectcraft-main | head
+      - name: Fonts
+        shell: bash
+        run: |
+          mkdir -p out/fonts
+          base=https://raw.githubusercontent.com/google/fonts/main/ofl
+          curl -fsSL "$base/heebo/Heebo%5Bwght%5D.ttf" -o "out/fonts/Heebo[wght].ttf" || true
+          curl -fsSL "$base/rubik/Rubik%5Bwght%5D.ttf" -o "out/fonts/Rubik[wght].ttf" || true
+          curl -fsSL "$base/assistant/Assistant%5Bwght%5D.ttf" -o "out/fonts/Assistant[wght].ttf" || true
+      - name: Build
+        working-directory: effectcraft-main
+        run: cargo build --release -p effectcraft
+      - name: Package
+        shell: bash
+        run: |
+          cp effectcraft-main/target/release/effectcraft.exe out/LiroycEffects.exe
+          mv out LiroycEffects
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LiroycEffects-windows
+          path: LiroycEffects
